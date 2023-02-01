@@ -5,9 +5,11 @@ Created: 19 January 2023
 import argparse
 import json
 import sys
+import re
+from datetime import datetime
 from configparser import ConfigParser
 from urllib import parse, error, request
-from pprint import pp
+#from pprint import pp
 
 BASE_CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 BASE_WEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
@@ -25,7 +27,7 @@ def read_usr_input():
     parser.add_argument("city", nargs='+', type=str, help="Enter a city name")
     parser.add_argument("-f", "--forecast", action="store_true",
                         help="Display weather forecast")
-    parser.add_argument("-l", "--lang", nargs=1, type=str,
+    parser.add_argument("-l", "--lang", nargs=1, type=str, default="en",
                         help="Display wttr with your chosen language")
     return parser.parse_args()
 
@@ -33,8 +35,8 @@ def build_weather_query(city_name, language, forecast=False):
     api_key = _get_api_key()
     city = " ".join(city_name)
     encode_city = parse.quote_plus(city)
-    encode_lang = language = "en" if language is None else language[0]
-    url = (f"{BASE_WEATHER_FORECAST_URL}?q={encode_city}&appid={api_key}"
+    encode_lang = language[0]
+    url = (f"{BASE_WEATHER_FORECAST_URL}?q={encode_city}&cnt=8&appid={api_key}"
     f"&units=metric&lang={encode_lang}") if forecast is True else (f""
     f"{BASE_CURRENT_WEATHER_URL}?q={encode_city}&appid={api_key}&units=metric"
     f"&lang={encode_lang}")
@@ -58,10 +60,37 @@ def get_data(wttr_query):
 
 def display_data(wttr_data):
     city = wttr_data['name'] if 'name' in wttr_data else wttr_data['city']['name']
-    temperature = wttr_data['list'][0]
-    print(temperature)
+    timeNow = datetime.now()
+    compHour = timeNow.hour
+    compDay = timeNow.day
+    if 'list' in wttr_data:
+        for tmp in wttr_data['list']:
+            temperature = tmp['main']['temp']
+            weather = tmp['weather'][0]['main']
+            description = tmp['weather'][0]['description']
+            time = tmp['dt_txt']
+            listTime = re.split(' |:|-|0', time)
+            listTime = list(filter(None, listTime))
+            listTime.append('0') if len(listTime) < 5 else listTime
+            if compDay == int(listTime[3]) and compHour <= int(listTime[4]):
+                print(f"{city}",
+                      f"{temperature}°C",
+                      f"{weather}",
+                      f"{description}",
+                      f"{time}")
+    else:
+        temperature = wttr_data['main']['temp']
+        weather = wttr_data['weather'][0]['main']
+        description = wttr_data['weather'][0]['main']
+        time = str(timeNow).split('.')[:-1][0]
+        print(f"{city}",
+              f"{temperature}°C",
+              f"{weather}",
+              f"{description}",
+              f"{time}")
 
 if __name__ == "__main__":
+    pass
     usr_input = read_usr_input()
     wttr_query = build_weather_query(usr_input.city, usr_input.lang,
                                      usr_input.forecast)
