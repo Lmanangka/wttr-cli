@@ -6,10 +6,10 @@ import argparse
 import json
 import sys
 import re
+from tabulate import tabulate
 from datetime import datetime
 from configparser import ConfigParser
 from urllib import parse, error, request
-#from pprint import pp
 
 BASE_CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 BASE_WEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
@@ -36,7 +36,7 @@ def build_weather_query(city_name, language, forecast=False):
     city = " ".join(city_name)
     encode_city = parse.quote_plus(city)
     encode_lang = language[0]
-    url = (f"{BASE_WEATHER_FORECAST_URL}?q={encode_city}&cnt=8&appid={api_key}"
+    url = (f"{BASE_WEATHER_FORECAST_URL}?q={encode_city}&cnt=24&appid={api_key}"
     f"&units=metric&lang={encode_lang}") if forecast is True else (f""
     f"{BASE_CURRENT_WEATHER_URL}?q={encode_city}&appid={api_key}&units=metric"
     f"&lang={encode_lang}")
@@ -63,6 +63,8 @@ def display_data(wttr_data):
     timeNow = datetime.now()
     compHour = timeNow.hour
     compDay = timeNow.day
+    data = {'City': [], 'Temperature': [], 'Weather': [],
+            'Description': [], 'Time': []}
     if 'list' in wttr_data:
         for tmp in wttr_data['list']:
             temperature = tmp['main']['temp']
@@ -72,31 +74,31 @@ def display_data(wttr_data):
             listTime = re.split(' |:|-|0', time)
             listTime = list(filter(None, listTime))
             listTime.append('0') if len(listTime) < 5 else listTime
-            if compDay == int(listTime[3]) and compHour <= int(listTime[4]):
-                print(f"{city}",
-                      f"{temperature}°C",
-                      f"{weather}",
-                      f"{description}",
-                      f"{time}")
+            if int(listTime[3]) == compDay and int(listTime[4]) < compHour:
+                pass
+            else:
+                data['City'].append(city)
+                data['Temperature'].append(temperature)
+                data['Weather'].append(weather)
+                data['Description'].append(description)
+                data['Time'].append(time)
+        print(tabulate(data, headers='keys', tablefmt='fancy_grid'))
     else:
         temperature = wttr_data['main']['temp']
         weather = wttr_data['weather'][0]['main']
         description = wttr_data['weather'][0]['main']
         time = str(timeNow).split('.')[:-1][0]
-        print(f"{city}",
-              f"{temperature}°C",
-              f"{weather}",
-              f"{description}",
-              f"{time}")
+        data['City'].append(city)
+        data['Temperature'].append(temperature)
+        data['Weather'].append(weather)
+        data['Description'].append(description)
+        data['Time'].append(time)
+        print(tabulate(data, headers='keys', tablefmt='fancy_grid'))
 
 if __name__ == "__main__":
-    pass
     usr_input = read_usr_input()
     wttr_query = build_weather_query(usr_input.city, usr_input.lang,
                                      usr_input.forecast)
     wttr_data = get_data(wttr_query)
-#    print(usr_input)
-#    print(wttr_query)
-#    pp(wttr_data)
     display_data(wttr_data)
 
