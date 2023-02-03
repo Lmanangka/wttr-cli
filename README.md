@@ -8,6 +8,12 @@ API, processing the data and how to make it presentable to a user
 
 ## Usage
 
+- Installing dependencies
+
+```sh
+pip install -r requirements.txt
+```
+
 - Check current weather  
 
 ```sh
