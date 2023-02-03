@@ -20,15 +20,16 @@ def _get_api_key():
     return config["openweather"]["api_key"]
 
 def read_usr_input():
-    parser = argparse.ArgumentParser(prog="wttr",
-                                     description="wttr is an app to display a\
-                                             current weather and weather\
-                                             forecast.")
-    parser.add_argument("city", nargs='+', type=str, help="Enter a city name")
+    parser = argparse.ArgumentParser(prog="wttr-cli",
+                                     description="wttr-cli is an app to display\
+                                             a current weather and weather\
+                                             forecast.",
+                                     epilog="Example: python wttr-cli semarang")
+    parser.add_argument("city", nargs='+', type=str, help="enter a city name")
     parser.add_argument("-f", "--forecast", action="store_true",
-                        help="Display weather forecast")
+                        help="show weather forecast with 3 hours interval")
     parser.add_argument("-l", "--lang", nargs=1, type=str, default="en",
-                        help="Display wttr with your chosen language")
+                        help="show weather with your chosen language")
     return parser.parse_args()
 
 def build_weather_query(city_name, language, forecast=False):
@@ -60,39 +61,36 @@ def get_data(wttr_query):
 
 def display_data(wttr_data):
     city = wttr_data['name'] if 'name' in wttr_data else wttr_data['city']['name']
+    # realtime date time using library time
     timeNow = datetime.now()
-    compHour = timeNow.hour
-    compDay = timeNow.day
+    compNow = [timeNow.day, timeNow.hour]
+    # created new dictionary for data forecast from API
     data = {'City': [], 'Temperature': [], 'Weather': [],
             'Description': [], 'Time': []}
     if 'list' in wttr_data:
         for tmp in wttr_data['list']:
-            temperature = tmp['main']['temp']
-            weather = tmp['weather'][0]['main']
-            description = tmp['weather'][0]['description']
-            time = tmp['dt_txt']
-            listTime = re.split(' |:|-|0', time)
-            listTime = list(filter(None, listTime))
-            listTime.append('0') if len(listTime) < 5 else listTime
-            if int(listTime[3]) == compDay and int(listTime[4]) < compHour:
-                pass
-            else:
+            # filter date time, and stored it in a list [date, time]
+            dateFiltered = re.split(' |-|:|0', tmp['dt_txt'])
+            dateFiltered = list(filter(None, dateFiltered))
+            del dateFiltered[0:3]
+            dateFiltered = [eval(i) for i in dateFiltered]
+            dateFiltered.append(0) if len(dateFiltered) < 2 else dateFiltered
+            # compare date time today and forecast date the output will be
+            # 3 days forecast including today with 3 hours intervals
+            if dateFiltered >= compNow:
                 data['City'].append(city)
-                data['Temperature'].append(temperature)
-                data['Weather'].append(weather)
-                data['Description'].append(description)
-                data['Time'].append(time)
+                data['Temperature'].append(tmp['main']['temp'])
+                data['Weather'].append(tmp['weather'][0]['main'])
+                data['Description'].append(tmp['weather'][0]['main'])
+                data['Time'].append(tmp['dt_txt'])
+        # make a table using tabulate read data from data dictionary
         print(tabulate(data, headers='keys', tablefmt='fancy_grid'))
     else:
-        temperature = wttr_data['main']['temp']
-        weather = wttr_data['weather'][0]['main']
-        description = wttr_data['weather'][0]['main']
-        time = str(timeNow).split('.')[:-1][0]
         data['City'].append(city)
-        data['Temperature'].append(temperature)
-        data['Weather'].append(weather)
-        data['Description'].append(description)
-        data['Time'].append(time)
+        data['Temperature'].append(wttr_data['main']['temp'])
+        data['Weather'].append(wttr_data['weather'][0]['main'])
+        data['Description'].append(wttr_data['weather'][0]['main'])
+        data['Time'].append(str(timeNow).split('.')[:-1][0])
         print(tabulate(data, headers='keys', tablefmt='fancy_grid'))
 
 if __name__ == "__main__":
