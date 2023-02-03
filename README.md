@@ -14,7 +14,7 @@ API, processing the data and how to make it presentable to a user
 python wttr-cli [CITY]
 ```
 
-![Image of current weather](https//github.com/Lmanangka/wttr-cli/blob/main/current_weather.png?raw=true)
+![Image of current weather](https://github.com/Lmanangka/wttr-cli/blob/main/img/current_weather.png?raw=true)
 
 - Check weather forecast  
 
@@ -26,7 +26,7 @@ or
 python wttr-cli [CITY] [--forecast]
 ```
 
-![Image of weather forecast](https//github.com/Lmanangka/wttr-cli/blob/main/weather_forecast.png?raw=true)
+![Image of weather forecast](https://github.com/Lmanangka/wttr-cli/blob/main/img/weather_forecast.png?raw=true)
 
 - To change a language
 
@@ -38,7 +38,7 @@ or
 python wttr-cli [CITY] [--lang] [LANGUAGE]
 ```
 
-![Image of current weather with chosen language](https//github.com/Lmanangka/wttr-cli/blob/main/current_weather_with_chosen_language.png?raw=true)
+![Image of current weather with chosen language](https://github.com/Lmanangka/wttr-cli/blob/main/img/current_weather_with_chosen_language.png?raw=true)
 
 [Supported language](https://openweathermap.org/current#multi)
 
@@ -48,7 +48,7 @@ python wttr-cli [CITY] [--lang] [LANGUAGE]
 python wttr-cli [-h]
 ```
 
-![Image of wttr-cli help text](https//github.com/Lmanangka/wttr-cli/blob/main/help_text.png?raw=true)
+![Image of wttr-cli help text](https://github.com/Lmanangka/wttr-cli/blob/main/img/help_text.png?raw=true)
 
 ## References and Credits
 - [openweathermap](https://openweathermap.org/) for providing data for free
